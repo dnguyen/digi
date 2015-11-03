@@ -12,8 +12,8 @@ router.get('/', function(req, res) {
 
 router.post('/', function(req, res) {
     users.create(req.body.username, req.body.password)
-        .then((data) => {
-            res.send(data);
+        .then((user) => {
+            res.send(user);
         }, (err) => {
             res.status(500).send({ message: 'Username already exists.' });
         });

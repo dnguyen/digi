@@ -2,11 +2,34 @@
 let bcrypt = require('bcrypt');
 let shortid = require('shortid');
 let database = require('../../database.js');
+let User = require('../models/user.js');
 
 class UsersService {
 
     constructor() {
 
+    }
+
+    getById(user_id) {
+        var promise = new Promise((resolve, reject) => {
+            let query = `MATCH (user:User { user_id: {user_id}})
+                         RETURN user`;
+            let params = { user_id: user_id };
+
+            database.cypher({
+                query: query,
+                params: params
+            }, (err, results) => {
+                if (err) return reject(new Error(err));
+                if (results.length) {
+                    return resolve(new User(results[0]['user']));
+                } else {
+                    return reject(new Error('User does not exist.'));
+                }
+            });
+        });
+
+        return promise;
     }
 
     /**
@@ -31,7 +54,7 @@ class UsersService {
                 if (!results.length) {
                     resolve(false);
                 } else {
-                    let user = results[0]['user'];
+                    let user = new User(results[0]['user']);
                     resolve(user);
                 }
 
@@ -61,7 +84,7 @@ class UsersService {
                         params: params
                     }, (err, results) => {
                         if (err) { return reject(new Error(err)); }
-                        return resolve(results[0]['user']);
+                        return resolve(new User(results[0]['user']));
                     });
                 });
             });
