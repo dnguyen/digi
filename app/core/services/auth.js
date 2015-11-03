@@ -25,6 +25,8 @@ class AuthService {
                 if (err) return reject(new Error(err));
                 if (results.length) {
                     return resolve(new Token(results[0]['t']));
+                } else {
+                    return reject(new Error(results));
                 }
             });
         });
