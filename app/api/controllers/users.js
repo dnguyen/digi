@@ -6,11 +6,11 @@ let UsersService = require('../../core/services/users.js');
 const router = express.Router();
 const users = new UsersService();
 
-router.get('/', function(req, res) {
+router.get('/', (req, res) => {
     res.send('<h1>Users</h1>');
 });
 
-router.post('/', function(req, res) {
+router.post('/', (req, res) => {
     users.create(req.body.username, req.body.password)
         .then((user) => {
             res.send(user);
