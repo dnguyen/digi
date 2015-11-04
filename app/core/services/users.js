@@ -32,10 +32,7 @@ class UsersService {
         return promise;
     }
 
-    /**
-     * Determines whether a user exists by username
-     */
-    exists(username) {
+    getByUsername(username) {
         var promise = new Promise((resolve, reject) => {
             let query = `MATCH (user:User { username: {username}})
                         RETURN user`;
@@ -48,14 +45,14 @@ class UsersService {
                 params: parameters
             }, (err, results) => {
                 if (err) {
-                    new Error(err);
+                    return reject(new Error(err));
                 }
 
                 if (!results.length) {
-                    resolve(false);
+                    return resolve(false);
                 } else {
                     let user = new User(results[0]['user']);
-                    resolve(user);
+                    return resolve(user);
                 }
 
             });

@@ -1,5 +1,6 @@
 'use strict';
 let http = require('http');
+let AuthController = require('./controllers/auth.js');
 let UsersController = require('./controllers/users.js');
 let GroupsController = require('./controllers/groups.js');
 
@@ -23,6 +24,7 @@ class Api {
     }
 
     setupRoutes() {
+        this.app.use('/auth', AuthController);
         this.app.use('/users', UsersController);
         this.app.use('/groups', GroupsController);
     }
