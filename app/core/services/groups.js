@@ -4,8 +4,33 @@ let database = require('../../database.js');
 let Group = require('../models/group.js');
 
 class GroupsService {
+
     constructor() {
 
+    }
+
+    getById(group_id) {
+        let promise = new Promise((resolve, reject) => {
+            let query = `MATCH (group:Group { group_id: {group_id}})-[member:Member_Of]-(user)
+                         RETURN group, collect(user) AS members`;
+            let params = {
+                group_id: group_id
+            };
+
+            database.cypher({
+                query: query,
+                params: params
+            }, (err, results) => {
+                if (err) { reject(new Error(err)); }
+                if (results) {
+                    resolve(results);
+                } else {
+                    reject(new Error('No group with that id'));
+                }
+            });
+        });
+
+        return promise;
     }
 
     create(name) {
@@ -43,7 +68,7 @@ class GroupsService {
         let promise = new Promise((resolve, reject) => {
             let query = `MATCH (g:Group { group_id: {group_id}}),
                             (u:User { user_id: {user_id}})
-                         CREATE u-[m:Member_Of]-g
+                         CREATE u-[m:Member_Of]->g
                          RETURN m`;
             let params = {
                 group_id: group_id,

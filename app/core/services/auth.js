@@ -58,7 +58,6 @@ class AuthService {
             }, (err, results) => {
                 if (err) { return reject(new Error(err)); }
                 if (results.length) {
-                    console.log(results);
                     return resolve(new User(results[0]['user']));
                 }
             });
@@ -85,7 +84,6 @@ class AuthService {
                 params: params
             }, (err, results) => {
                 if (err) return reject(new Error(err));
-                console.log(results);
                 if (results.length) {
                     return resolve(new Token(results[0]['t']));
                 } else {
