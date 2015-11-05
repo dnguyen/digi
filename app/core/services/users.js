@@ -2,6 +2,7 @@
 let bcrypt = require('bcrypt');
 let shortid = require('shortid');
 let database = require('../../database.js');
+let AppError = require('../utilities/error.js');
 let User = require('../models/user.js');
 
 class UsersService {
@@ -20,11 +21,11 @@ class UsersService {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) return reject(new Error(err));
+                if (err) return reject(new AppError(err));
                 if (results.length) {
                     return resolve(new User(results[0]['user']));
                 } else {
-                    return reject(new Error('User does not exist.'));
+                    return reject(new AppError('User does not exist.'));
                 }
             });
         });
@@ -45,7 +46,11 @@ class UsersService {
                 params: parameters
             }, (err, results) => {
                 if (err) { reject(new Error(err)); }
-                resolve(new User(results[0]['user']));
+                if (results.length) {
+                    resolve(new User(results[0]['user']));
+                } else {
+                    reject(new AppError('Username does not exist'));
+                }
             });
         });
 
@@ -71,7 +76,7 @@ class UsersService {
                         query: query,
                         params: params
                     }, (err, results) => {
-                        if (err) { return reject(new Error(err)); }
+                        if (err) { return reject(new AppError(err)); }
                         return resolve(new User(results[0]['user']));
                     });
                 });

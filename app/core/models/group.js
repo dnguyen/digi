@@ -1,5 +1,6 @@
 'use strict';
 let database = require('../../database.js');
+let AppError = require('../utilities/error.js');
 let Model = require('./model.js');
 
 class Group extends Model {
@@ -35,7 +36,7 @@ class Group extends Model {
                 params: params
             }, (err, results) => {
                 if (err) { reject(err); }
-                if (results) {
+                if (results.length) {
                     resolve(true);
                 } else {
                     reject(false);
@@ -67,9 +68,9 @@ class Group extends Model {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) return reject(new Error(err));
-                if (results.length) {
-                    return resolve(new Group(results[0]['g']));
+                if (err) reject(new AppError(err));
+                if (results) {
+                    resolve(new Group(results[0]['g']));
                 }
             });
         });

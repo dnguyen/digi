@@ -36,7 +36,7 @@ router.post('/:group_id/members', (req, res) => {
     let group_id = req.params.group_id;
     let usernameBeingAdded = req.body.username;
     let token = req.body.token;
-    var scope = {};
+    let scope = {};
 
     users.getByUsername(usernameBeingAdded).then((userBeingAdded) => {
         return userBeingAdded;

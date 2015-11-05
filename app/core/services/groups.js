@@ -1,6 +1,7 @@
 'use strict';
 let shortid = require('shortid');
 let database = require('../../database.js');
+let AppError = require('../utilities/error.js');
 let Group = require('../models/group.js');
 
 class GroupsService {
@@ -22,11 +23,11 @@ class GroupsService {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) { reject(new Error(err)); }
-                if (results) {
+                if (err) { reject(new AppError(err)); }
+                if (results.length) {
                     resolve(new Group(results[0]));
                 } else {
-                    reject(new Error('No group with that id'));
+                    reject(new AppError('No group with that id'));
                 }
             });
         });
@@ -50,7 +51,7 @@ class GroupsService {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) { return reject(new Error(err)); }
+                if (err) { return reject(new AppError(err)); }
                 if (results.length) {
                     return resolve(new Group(results[0]['g']));
                 }
@@ -80,9 +81,9 @@ class GroupsService {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) return reject(new Error(err));
+                if (err) reject(new AppError(err));
                 if (results.length) {
-                    return resolve(new Group(results[0]['g']));
+                    resolve(new Group(results[0]['g']));
                 }
             });
         });

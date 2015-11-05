@@ -2,6 +2,7 @@
 let uuid = require('node-uuid');
 let database = require('../../database.js');
 let security = require('../utilities/security.js');
+let AppError = require('../utilities/error.js');
 let Token = require('../models/token.js');
 let UserService = require('./users.js');
 let User = require('../models/user.js');
@@ -24,14 +25,14 @@ class AuthService {
                         this.createToken(user.properties.user_id).then((token) => {
                             resolve(token);
                         }).catch((err) => {
-                            reject(err);
+                            reject(new AppError(err));
                         });
                     } else {
-                        reject(new Error('Invalid username or password.'));
+                        reject(new AppError('Invalid username or password.'));
                     }
                 });
             }).catch((err) => {
-                reject(new Error('Invalid username or password.'));
+                reject(new AppError('Invalid username or password.'));
             });
         });
 
@@ -56,9 +57,11 @@ class AuthService {
                 query: query,
                 params: params
             }, (err, results) => {
-                if (err) { return reject(new Error(err)); }
+                if (err) { reject(new AppError(err)); }
                 if (results.length) {
-                    return resolve(new User(results[0]['user']));
+                    resolve(new User(results[0]['user']));
+                } else {
+                    reject(new AppError('User does not exist.'));
                 }
             });
         });
@@ -87,7 +90,7 @@ class AuthService {
                 if (results.length) {
                     return resolve(new Token(results[0]['t']));
                 } else {
-                    return reject(new Error(results));
+                    return reject(new AppError('Failed to create token.'));
                 }
             });
         });
