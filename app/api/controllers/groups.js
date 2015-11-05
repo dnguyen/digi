@@ -17,13 +17,17 @@ const auth = new AuthService();
 router.post('/', (req, res) => {
     let token = req.body.token;
     let groupName = req.body.name;
+    let scope = {};
 
     auth.getUser(token).then((creator) => {
-        groups.create(groupName).then((group) => {
-            groups.addMember(group.properties.group_id, creator).then((group) => {
-                res.send(group);
-            });
-        });
+        scope.creator = creator;
+        return groups.create(groupName);
+    }).then((group) => {
+        return group.addMember(scope.creator);
+    }).then((group) => {
+        res.send(group);
+    }).catch((err) => {
+        res.send(err);
     });
 });
 

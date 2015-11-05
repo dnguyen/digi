@@ -18,7 +18,8 @@ class Dispatcher {
         socket.on('locationUpdate', (data) => {
             // data should contain: a valid session token, location coordinates
             // use session token to get user that is sending this update
-            // dispatch location to all members of groups that the user is in
+            // Using User object get ids of all the groups the user is a member of
+            // Find the socket io room for each of those rooms and broadcast locationUpdate message
         });
     }
 }
