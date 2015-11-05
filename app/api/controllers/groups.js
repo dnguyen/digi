@@ -36,34 +36,34 @@ router.post('/:group_id/members', (req, res) => {
     let group_id = req.params.group_id;
     let usernameBeingAdded = req.body.username;
     let token = req.body.token;
+    var scope = {};
 
-    // TODO: Clean up callback hell...
     users.getByUsername(usernameBeingAdded).then((userBeingAdded) => {
+        return userBeingAdded;
+    }).then((userBeingAdded) => {
         if (userBeingAdded) {
-            auth.getUser(token).then((user) => {
-                groups.getById(group_id).then((group) => {
-                    group.isMember(user).then((isMember) => {
-                        if (isMember) {
-                            group.addMember(userBeingAdded).then((group) => {
-                                res.send(group);
-                            }).catch((err) => {
-                                res.send('Failed to add member to group.');
-                            });
-                        }
-                    }).catch((err) => {
-                        res.status(500).send('User is not a member of this group.');
-                    });
-                }).catch((err) => {
-                    res.status(500).send(err.message);
-                });
-            }).catch((err) => {
-                res.send(err);
-            });
+            scope.userBeingAdded = userBeingAdded;
+            return groups.getById(group_id);
         } else {
             res.send('Username does not exist.');
         }
+    }).then((group) => {
+        scope.group = group;
+        return auth.getUser(token);
+    }).then((user) => {
+        scope.user = user;
+        return scope.group.isMember(user);
+    }).then((isMember) => {
+        if (isMember) {
+            return scope.group.addMember(scope.userBeingAdded);
+        } else {
+            res.status(403).send('User is not in this group.');
+        }
+    }).then((group) => {
+        res.send(group);
+    }).catch((err) => {
+        res.status(500).send(err);
     });
-
 });
 
 module.exports = router;

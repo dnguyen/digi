@@ -44,17 +44,8 @@ class UsersService {
                 query: query,
                 params: parameters
             }, (err, results) => {
-                if (err) {
-                    return reject(new Error(err));
-                }
-
-                if (!results.length) {
-                    return resolve(false);
-                } else {
-                    let user = new User(results[0]['user']);
-                    return resolve(user);
-                }
-
+                if (err) { reject(new Error(err)); }
+                resolve(new User(results[0]['user']));
             });
         });
 
