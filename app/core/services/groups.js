@@ -11,7 +11,8 @@ class GroupsService {
 
     getById(group_id) {
         let promise = new Promise((resolve, reject) => {
-            let query = `MATCH (group:Group { group_id: {group_id}})-[member:Member_Of]-(user)
+            let query = `MATCH (group:Group { group_id: {group_id}})
+                         OPTIONAL MATCH group-[member:Member_Of]-(user)
                          RETURN group, collect(user) AS members`;
             let params = {
                 group_id: group_id
@@ -23,7 +24,7 @@ class GroupsService {
             }, (err, results) => {
                 if (err) { reject(new Error(err)); }
                 if (results) {
-                    resolve(results);
+                    resolve(new Group(results[0]));
                 } else {
                     reject(new Error('No group with that id'));
                 }
@@ -69,7 +70,7 @@ class GroupsService {
             let query = `MATCH (g:Group { group_id: {group_id}}),
                             (u:User { user_id: {user_id}})
                          CREATE u-[m:Member_Of]->g
-                         RETURN m`;
+                         RETURN g`;
             let params = {
                 group_id: group_id,
                 user_id: user.properties.user_id
@@ -81,7 +82,7 @@ class GroupsService {
             }, (err, results) => {
                 if (err) return reject(new Error(err));
                 if (results.length) {
-                    return resolve(results[0]['m']);
+                    return resolve(new Group(results[0]['g']));
                 }
             });
         });
