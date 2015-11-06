@@ -1,5 +1,6 @@
 'use strict';
 let database = require('../../database.js');
+let events = require('../../events.js');
 let AppError = require('../utilities/error.js');
 let Model = require('./model.js');
 
@@ -70,7 +71,9 @@ class Group extends Model {
             }, (err, results) => {
                 if (err) reject(new AppError(err));
                 if (results) {
-                    resolve(new Group(results[0]['g']));
+                    let group = new Group(results[0]['g'])
+                    events.emit('api:addMember', { group: group, user: user });
+                    resolve(group);
                 }
             });
         });

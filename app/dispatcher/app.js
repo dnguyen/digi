@@ -3,6 +3,7 @@ let sockets = require('socket.io');
 let events = require('../events.js');
 
 class Dispatcher {
+
     constructor(http) {
         this.http = http;
         this.io = sockets(http);
@@ -12,10 +13,11 @@ class Dispatcher {
 
     setupEventHandling() {
         events.on('api:newGroup', this.handleNewGroupCreated);
+        events.on('api:addMember', this.handleGroupAddedMember);
     }
 
     onConnection(socket) {
-        console.log('[DISPATCHER] New socket connection.');
+        console.log('[DISPATCHER] New socket connection.', socket.id);
 
         // Upon first connection, get any gruops the user is part of
         // and join the socket room for each of those groups.
@@ -30,6 +32,10 @@ class Dispatcher {
 
     handleNewGroupCreated(group) {
         console.log('[DISPATCHER] Handling api:newGroup event.');
+    }
+
+    handleGroupAddedMember(data) {
+        console.log('[DISPATCHER] Handling api:addMember', data.group, data.user);
     }
 }
 

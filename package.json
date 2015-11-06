@@ -16,6 +16,7 @@
     "mysql": "^2.9.0",
     "neo4j": "^2.0.0-RC2",
     "node-uuid": "^1.4.3",
+    "redis": "^2.3.0",
     "sequelize": "^3.13.0",
     "shortid": "^2.2.4",
     "socket.io": "^1.3.7"

@@ -26,7 +26,6 @@ router.post('/', (req, res) => {
     }).then((group) => {
         return group.addMember(scope.creator);
     }).then((group) => {
-        events.emit('api:newGroup', { group: group });
         res.send(group);
     }).catch((err) => {
         res.send(err);
