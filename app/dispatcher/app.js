@@ -1,12 +1,17 @@
 'use strict';
-var sockets = require('socket.io');
+let sockets = require('socket.io');
+let events = require('../events.js');
 
 class Dispatcher {
     constructor(http) {
         this.http = http;
         this.io = sockets(http);
-
+        this.setupEventHandling();
         this.io.on('connection', this.onConnection);
+    }
+
+    setupEventHandling() {
+        events.on('api:newGroup', this.handleNewGroupCreated);
     }
 
     onConnection(socket) {
@@ -21,6 +26,10 @@ class Dispatcher {
             // Using User object get ids of all the groups the user is a member of
             // Find the socket io room for each of those rooms and broadcast locationUpdate message
         });
+    }
+
+    handleNewGroupCreated(group) {
+        console.log('[DISPATCHER] Handling api:newGroup event.');
     }
 }
 

@@ -1,6 +1,7 @@
 'use strict';
 let express = require('express');
 let database = require('../../database.js');
+let events = require('../../events.js');
 let AuthService = require('../../core/services/auth.js');
 let GroupsService = require('../../core/services/groups.js');
 let UsersService = require('../../core/services/users.js');
@@ -25,6 +26,7 @@ router.post('/', (req, res) => {
     }).then((group) => {
         return group.addMember(scope.creator);
     }).then((group) => {
+        events.emit('api:newGroup', { group: group });
         res.send(group);
     }).catch((err) => {
         res.send(err);
