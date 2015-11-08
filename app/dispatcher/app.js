@@ -29,12 +29,12 @@ class Dispatcher {
         // Upon first connection, get any groups the user is part of
         // and join the socket room for each of those groups.
         socket.on('setupConnection', (data) => {
-            console.log('[DISPATCHER] Recieved setupConnection');
+            console.log('[DISPATCHER] Received setupConnection');
             auth.getUser(data.token).then((user) => {
                 return user.getGroups();
             }).then((user) => {
                 user.properties.groups.forEach((group) => {
-                    console.log('[DISPATCHER] Socket joining room', group.group_id);
+                    console.log('[DISPATCHER] Socket joining room', socket.id, group.group_id);
                     socket.join(group.group_id);
                 });
             }).catch((err) => {
@@ -44,10 +44,23 @@ class Dispatcher {
         });
 
         socket.on('locationUpdate', (data) => {
+            console.log('[DISPATCHER] Received locationUpdate', data);
             // data should contain: a valid session token, location coordinates
             // use session token to get user that is sending this update
             // Using User object get ids of all the groups the user is a member of
             // Find the socket io room for each of those rooms and broadcast locationUpdate message
+            auth.getUser(data.token).then((user) => {
+                return user.getGroups();
+            }).then((user) => {
+                user.properties.groups.forEach((group) => {
+                    socket.broadcast.to(group.group_id).emit('locationUpdate', { user_id: user.properties.user_id,
+                        latitude: data.latitude,
+                        longitude: data.longitude
+                    });
+                });
+            }).catch((err) => {
+                console.log(err);
+            });
         });
     }
 
