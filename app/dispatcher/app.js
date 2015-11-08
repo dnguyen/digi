@@ -1,6 +1,9 @@
 'use strict';
 let sockets = require('socket.io');
 let events = require('../events.js');
+let AuthService = require('../core/services/auth.js');
+
+const auth = new AuthService();
 
 class Dispatcher {
 
@@ -19,8 +22,21 @@ class Dispatcher {
     onConnection(socket) {
         console.log('[DISPATCHER] New socket connection.', socket.id);
 
-        // Upon first connection, get any gruops the user is part of
+        socket.on('disconnect', () => {
+            console.log('[DISPATCHER] Socket disconnected', socket.id);
+        });
+
+        // Upon first connection, get any groups the user is part of
         // and join the socket room for each of those groups.
+        socket.on('setupConnection', (data) => {
+            let user = auth.getUser(data.token).then((user) => {
+                return user.getGroups();
+            }).then((user) => {
+                user.properties.groups.forEach((group) => {
+                    socket.join(group.properties.group_id);
+                });
+            });
+        });
 
         socket.on('locationUpdate', (data) => {
             // data should contain: a valid session token, location coordinates

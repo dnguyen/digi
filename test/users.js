@@ -27,7 +27,7 @@ describe('User Model', () => {
             let jsonString = JSON.stringify(userJsonObject);
 
             expect(userJsonObject).to.be.a('object');
-            expect(jsonString).to.equal('{"user_id":"N1Giw7-zx","username":"dnguyen3"}');
+            expect(jsonString).to.equal('{"user_id":"N1Giw7-zx","username":"dnguyen3","groups":[]}');
         });
     })
 });
