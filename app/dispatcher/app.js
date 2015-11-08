@@ -29,13 +29,18 @@ class Dispatcher {
         // Upon first connection, get any groups the user is part of
         // and join the socket room for each of those groups.
         socket.on('setupConnection', (data) => {
-            let user = auth.getUser(data.token).then((user) => {
+            console.log('[DISPATCHER] Recieved setupConnection');
+            auth.getUser(data.token).then((user) => {
                 return user.getGroups();
             }).then((user) => {
                 user.properties.groups.forEach((group) => {
-                    socket.join(group.properties.group_id);
+                    console.log('[DISPATCHER] Socket joining room', group.group_id);
+                    socket.join(group.group_id);
                 });
+            }).catch((err) => {
+                console.log(err);
             });
+
         });
 
         socket.on('locationUpdate', (data) => {
