@@ -17,6 +17,7 @@ class Dispatcher {
     setupEventHandling() {
         events.on('api:newGroup', this.handleNewGroupCreated);
         events.on('api:addMember', this.handleGroupAddedMember);
+        events.on('api:newGroupMessage', (data) => { this.handleNewGroupMessage.call(this, data); });
     }
 
     onConnection(socket) {
@@ -70,6 +71,18 @@ class Dispatcher {
 
     handleGroupAddedMember(data) {
         console.log('[DISPATCHER] Handling api:addMember', data.group, data.user);
+    }
+
+    handleNewGroupMessage(data) {
+        console.log('[DISPATCHER] Handling api:newGroupMessage', data.user, data.group, data.message);
+        this.io.to(data.group.group_id).emit('newGroupMessage', {
+            user: {
+                user_id: data.user.user_id,
+                username: data.user.username
+            },
+            group: data.group,
+            message: data.message
+        });
     }
 }
 
