@@ -1,6 +1,7 @@
 'use strict';
 let sockets = require('socket.io');
 let events = require('../events.js');
+let redis = require('../redis.js');
 let AuthService = require('../core/services/auth.js');
 
 const auth = new AuthService();
@@ -51,6 +52,16 @@ class Dispatcher {
             // Using User object get ids of all the groups the user is a member of
             // Find the socket io room for each of those rooms and broadcast locationUpdate message
             auth.getUser(data.token).then((user) => {
+
+                // Update the user's last position in Redis
+                redis.hmset('user_location:'+user.properties.user_id, [
+                    'latitude', data.latitude,
+                    'longitude', data.longitude
+                ], (err, response) => {
+                    if (err) console.log(err);
+                   console.log('[REDIS] Set location for key user_location:'+user.properties.user_id, response);
+                });
+
                 return user.getGroups();
             }).then((user) => {
                 user.properties.groups.forEach((group) => {
