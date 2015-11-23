@@ -5,16 +5,21 @@ let database = require('../../database.js');
 // Trait Probabilities
 const HIGH_BRIGHTNESS_CHANCE = 15;
 
+// Traits
+
 // Animation Types
 const CYCLE = 0;
 const PULSE = 1;
+
+const CIRCLE_COUNT = 8;
+
 
 class BadgesServices {
     constructor() {}
 
     /**
      * Properties of a badge:
-     *  For each circle
+     *  A color for each circle (8 circles + 1 large center circle)
      *      - Hue [0-360] Int
      *      - Saturation [0-100] Int
      *      - Brightness [0-100] Int
@@ -24,16 +29,30 @@ class BadgesServices {
      *  Animation Speed:
      *      - slow, medium, fast (values will be determined later)
      */
-    createBadge(user) {
+    create(user) {
         let badge = {
-            color: generateColor(),
+            centerCircle: {
+                color: generateColor()
+            },
+            circles: generateCircles(),
             animation: generateAnimation()
         };
 
-        console.log(badge);
         return badge;
     }
 
+}
+
+function generateCircles() {
+    var circles = [];
+
+    for (var i = 0; i < CIRCLE_COUNT; i++) {
+        circles.push({
+            color: generateColor()
+        });
+    }
+
+    return circles;
 }
 
 function generateColor() {

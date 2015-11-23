@@ -65,7 +65,9 @@ class Dispatcher {
                 return user.getGroups();
             }).then((user) => {
                 user.properties.groups.forEach((group) => {
-                    socket.broadcast.to(group.group_id).emit('locationUpdate', { user_id: user.properties.user_id,
+                    socket.broadcast.to(group.group_id).emit('locationUpdate', {
+                        username: user.properties.username,
+                        user_id: user.properties.user_id,
                         latitude: data.latitude,
                         longitude: data.longitude
                     });

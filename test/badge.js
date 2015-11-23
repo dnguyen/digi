@@ -1,6 +1,7 @@
 'use strict';
 let BadgeService = require('../app/core/services/badges.js');
 
-let badge = new BadgeService();
+let badges = new BadgeService();
 
-badge.createBadge({});
+let badge = badges.create({});
+console.log(JSON.stringify(badge));
