@@ -20,9 +20,9 @@ class AuthService {
     authenticate(username, password) {
         var promise = new Promise((resolve, reject) => {
             users.getByUsername(username).then((user) => {
-                security.match(password, user.properties.password).then((matched) => {
+                security.match(password, user.password).then((matched) => {
                     if (matched === true) {
-                        this.createToken(user.properties.user_id).then((token) => {
+                        this.createToken(user.user_id).then((token) => {
                             resolve(token);
                         }).catch((err) => {
                             reject(new AppError(err));
@@ -46,22 +46,16 @@ class AuthService {
      */
     getUser(token) {
         let promise = new Promise((resolve, reject) => {
-            let query = `MATCH (t:Token)-[:Session]-(user)
-                         WHERE t.token = {token}
-                         RETURN user`
-            let params = {
-                token: token
-            };
-
-            database.cypher({
-                query: query,
-                params: params
-            }, (err, results) => {
-                if (err) { reject(new AppError(err)); }
-                if (results.length) {
-                    resolve(new User(results[0]['user']));
+            database.query(
+                `SELECT U.user_id, U.username FROM Tokens T
+                JOIN Users U ON U.user_id = T.user_id
+                WHERE token = ?`,
+            [token], (err, user) => {
+                if (err) { return reject(new AppError(err)); }
+                if (user) {
+                    return resolve(user[0]);
                 } else {
-                    reject(new AppError('User does not exist.'));
+                    return reject(new AppError('User does not exist'));
                 }
             });
         });
@@ -74,24 +68,18 @@ class AuthService {
     createToken(user_id) {
         console.log('creating token for', user_id);
         let promise = new Promise((resolve, reject) => {
-            let query = `MATCH (u:User {user_id: {user_id }})
-                         CREATE (t:Token { user_id: {user_id}, token: {token}})<-[s:Session]-(u)
-                         RETURN t`;
-            let params = {
-                user_id: user_id,
-                token: uuid.v4()
-            };
+            let token = uuid.v4();
+            database.query('INSERT INTO Tokens (token, user_id) VALUES (?, ?)', [token, user_id], (err, results) => {
+                if (err) return reject(new AppError('Failed to create token'));
+                database.query('SELECT * FROM Tokens WHERE token = ?', [token], (err, token) => {
+                    if (err) return reject(new AppError('Failed to find token'));
+                    if (token) {
+                        return resolve(token[0]);
+                    } else {
+                        return reject(new AppError('failed to find tokne'));
+                    }
+                });
 
-            database.cypher({
-                query: query,
-                params: params
-            }, (err, results) => {
-                if (err) return reject(new Error(err));
-                if (results.length) {
-                    return resolve(new Token(results[0]['t']));
-                } else {
-                    return reject(new AppError('Failed to create token.'));
-                }
             });
         });
 

@@ -19,19 +19,31 @@ router.post('/', (req, res) => {
     let token = req.body.token;
     let groupName = req.body.name;
     let scope = {};
-
+    console.log('Creating group for ' + token + ' ' + groupName);
     auth.getUser(token).then((creator) => {
         scope.creator = creator;
         return groups.create(groupName);
     }).then((group) => {
-        return group.addMember(scope.creator);
+        scope.group = group;
+        return groups.addMember(group.group_id, scope.creator.user_id);
     }).then((group) => {
-        res.send(group);
+        res.send(scope.group);
     }).catch((err) => {
         res.send(err);
     });
 });
 
+router.get('/:group_id', (req, res) => {
+    let group_id = req.params.group_id;
+    let token = req.query.token;
+    let scope = {};
+
+    groups.getById(group_id).then((group) => {
+        res.send(group);
+    }).catch((err) => {
+        res.send(err);
+    });
+});
 
 /**
  * POST /groups/:group_id/members

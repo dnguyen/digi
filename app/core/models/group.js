@@ -1,4 +1,5 @@
 'use strict';
+let _ = require('lodash');
 let shortid = require('shortid');
 let database = require('../../database.js');
 let events = require('../../events.js');
@@ -12,10 +13,25 @@ class Group extends Model {
         // Some queries will return just the group data. Others will include member data.
         // TODO: better solution.
         if (!node.properties) {
+
             this.properties = {
                 group_id: node.group.properties.group_id,
-                name: node.group.properties.name
+                name: node.group.properties.name,
+                messages: [],
+                members: []
             };
+
+            let sortedMessages = _.sortBy(node.messages, (message) => {
+                return -message.properties.created_at;
+            });
+            // map messages
+            _.each(sortedMessages, (messageNode) => {
+                this.properties.messages.push(messageNode.properties);
+            });
+            // map members
+            _.each(node.members, (memberNode) => {
+                this.properties.members.push(memberNode.properties);
+            });
         } else {
             this.properties = {
                 group_id: node.properties.group_id,

@@ -35,21 +35,12 @@ class UsersService {
 
     getByUsername(username) {
         var promise = new Promise((resolve, reject) => {
-            let query = `MATCH (user:User { username: {username}})
-                        RETURN user`;
-            let parameters = {
-                username: username
-            };
-
-            database.cypher({
-                query: query,
-                params: parameters
-            }, (err, results) => {
-                if (err) { reject(new Error(err)); }
-                if (results.length) {
-                    resolve(new User(results[0]['user']));
+            database.query('SELECT * FROM Users WHERE username = ?', [username], (err, user) => {
+                if (err) { return reject(err); }
+                if (user) {
+                    return resolve(user[0]);
                 } else {
-                    reject(new AppError('Username does not exist'));
+                    return reject(new AppError('Username does not exist'));
                 }
             });
         });
@@ -61,24 +52,16 @@ class UsersService {
         var promise = new Promise((resolve, reject) => {
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hashedPassword) => {
-                    let query = `CREATE (user:User {
-                                    user_id: { user_id },
-                                    username: { username },
-                                    password: { password} })
-                                 RETURN user`;
-                    let params = {
-                        user_id: shortid.generate(),
-                        username: username,
-                        password: hashedPassword
-                    };
-
-                    database.cypher({
-                        query: query,
-                        params: params
-                    }, (err, results) => {
-                        if (err) { return reject(new AppError(err)); }
-                        return resolve(new User(results[0]['user']));
-                    });
+                    database.query('INSERT INTO Users (username, password) VALUES (?, ?)',
+                        [username, hashedPassword], (err, results) => {
+                            database.query('SELECT user_id, username FROM Users WHERE user_id = ?', [results.insertId], (err, user) => {
+                                if (user) {
+                                    return resolve(user[0]);
+                                } else {
+                                    return reject({ error: 'No user with that id.'});
+                                }
+                            });
+                        });
                 });
             });
         });

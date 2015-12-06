@@ -33,14 +33,17 @@ class User extends Model {
             }, (err, results) => {
                 if (err) { reject(new AppError(err)); }
                 if (results) {
+
                     this.properties.groups = [];
-                    let groups = results[0].groups;
-                    groups.forEach((group) => {
-                        this.properties.groups.push({
-                            group_id: group.properties.group_id,
-                            name: group.properties.name
+                    if (results.length > 0) {
+                        let groups = results[0].groups;
+                        groups.forEach((group) => {
+                            this.properties.groups.push({
+                                group_id: group.properties.group_id,
+                                name: group.properties.name
+                            });
                         });
-                    });
+                    }
                     resolve(this);
                 } else {
                     reject(new AppError('Failed to get groups for user'));
