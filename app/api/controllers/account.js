@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
     let token = req.query.token;
 
     auth.getUser(token).then((user) => {
-        return user.getGroups();
+        return users.getGroupsForUser(user.user_id);
     }).then((user) => {
         res.send(user);
     }).catch((err) => {

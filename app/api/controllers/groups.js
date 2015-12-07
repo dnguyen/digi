@@ -69,12 +69,13 @@ router.post('/:group_id/members', (req, res) => {
         return auth.getUser(token);
     }).then((user) => {
         scope.user = user;
-        return scope.group.isMember(user);
+        return groups.isMember(scope.group.group_id, scope.userBeingAdded.user_id);
     }).then((isMember) => {
-        if (isMember) {
-            return scope.group.addMember(scope.userBeingAdded);
+        // Check if the user being added is already in the group or not
+        if (!isMember) {
+            return groups.addMember(scope.group.group_id, scope.userBeingAdded.user_id);
         } else {
-            res.status(403).send('User is not in this group.');
+            res.status(403).send('User is already in this group.');
         }
     }).then((group) => {
         res.send(group);
@@ -95,24 +96,7 @@ router.post('/:group_id/messages', (req, res) => {
     var scope = {};
 
     auth.getUser(token).then((user) => {
-        return user.getGroups();
-    }).then((user) => {
-        var isMember = false;
-        user.properties.groups.forEach((group) => {
-            if (group.group_id === group_id) {
-                isMember = true;
-            }
-        });
-
-        if (isMember) {
-            scope.user = user;
-            return groups.getById(group_id);
-        } else {
-            res.status(403).send('User is not in this group.');
-        }
-
-    }).then((group) => {
-        return group.addMessage(scope.user, message);
+        return groups.addMessage(group_id, user.user_id, message);
     }).then((results) => {
         res.send(results);
     }).catch((err) => {

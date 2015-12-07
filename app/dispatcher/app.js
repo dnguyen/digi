@@ -87,14 +87,21 @@ class Dispatcher {
     }
 
     handleNewGroupMessage(data) {
-        console.log('[DISPATCHER] Handling api:newGroupMessage', data.user, data.group, data.message);
-        this.io.to(data.group.group_id).emit('newGroupMessage', {
+        console.log('[DISPATCHER] Handling api:newGroupMessage', data.user_id, data.group_id, data.contents);
+        this.io.to(data.group_id).emit('newGroupMessage', {
             user: {
-                user_id: data.user.user_id,
-                username: data.user.username
+                user_id: data.user_id,
+                username: data.username
             },
-            group: data.group,
-            message: data.message
+            group: {
+                group_id: data.group_id,
+                name: data.name
+            },
+            message: {
+                message_id: data.message_id,
+                contents: data.contents,
+                created_at: data.created_at
+            }
         });
     }
 }

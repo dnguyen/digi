@@ -68,6 +68,20 @@ class UsersService {
 
         return promise;
     }
+
+    getGroupsForUser(user_id) {
+        var promise = new Promise ((resolve, reject) => {
+            database.query(
+                `SELECT G.group_id, G.name FROM Group_Members GM
+                 JOIN Groups G ON G.group_id = GM.group_id
+                 WHERE user_id = ?`, [user_id], (err, results) => {
+                    if (err) { return reject('Failed to find groups for user'); }
+                    return resolve(results);
+                 });
+        });
+
+        return promise;
+    }
 }
 
 module.exports = UsersService;
