@@ -10,11 +10,17 @@ const auth = new AuthService();
 
 router.get('/', (req, res) => {
     let token = req.query.token;
-
+    let scope = {};
     auth.getUser(token).then((user) => {
+        scope.user = user;
         return users.getGroupsForUser(user.user_id);
-    }).then((user) => {
-        res.send(user);
+    }).then((groups) => {
+
+        res.send({
+            user_id: scope.user.user_id,
+            username: scope.user.username,
+            groups: groups
+        });
     }).catch((err) => {
         res.send(err);
     });

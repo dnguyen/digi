@@ -30,7 +30,7 @@ class GroupsService {
                             `SELECT M.message_id, M.user_id, U.username, M.contents, M.created_at FROM Messages M
                              JOIN Users U ON U.user_id = M.user_id
                              WHERE M.group_id = ?
-                             ORDER BY M.created_at DESC`, [group_id], (err, messages) => {
+                             ORDER BY M.created_at`, [group_id], (err, messages) => {
                                 if (err) return reject(err);
 
                                 // Get members
@@ -115,7 +115,7 @@ class GroupsService {
                         JOIN Groups G ON G.group_id = M.group_id
                         WHERE message_id = ?`, [results.insertId], (err, message) => {
                         if (err) return reject(err);
-                        events.emit('api:newGroupMessage', message[0]);
+                        //events.emit('api:newGroupMessage', message[0]);
                         return resolve(message[0]);
                     });
                 });
