@@ -63,7 +63,7 @@ class GroupsService {
             database.query(`INSERT INTO Groups (name) VALUES (?)`, [name], (err, results) => {
                 if (err) { return reject(new AppError('Failed to create group')); }
                 if (results) {
-                    database.query('SELECT * FROM GROUPS WHERE group_id = ?', [results.insertId], (err, group) => {
+                    database.query('SELECT * FROM Groups WHERE group_id = ?', [results.insertId], (err, group) => {
                         if (group) {
                             return resolve(group[0]);
                         } else {
