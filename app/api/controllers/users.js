@@ -20,13 +20,17 @@ router.get('/', (req, res) => {
  *     password - string
  */
 router.post('/', (req, res) => {
-    users.create(req.body.username, req.body.password)
-        .then((user) => {
-            let badge = badges.create(user);
-            res.send(user);
-        }, (err) => {
-            res.status(500).send({ message: 'Username already exists.' });
-        });
+    let username = req.body.username;
+    let password = req.body.password;
+
+    users.exists(username).then((exists) => {
+    }).then(() => {
+        return users.create(username, password);
+    }).then((user) => {
+        res.send(user);
+    }).catch((err) => {
+        res.status(500).send(err);
+    });
 });
 
 module.exports = router;

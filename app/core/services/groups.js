@@ -123,6 +123,50 @@ class GroupsService {
 
         return promise;
     }
+
+    getLastMessage(group_id) {
+        let promise = new Promise((resolve, reject) => {
+            database.query(
+                `SELECT M.*, U.username FROM Messages M
+                JOIN Users U ON U.user_id = M.user_id
+                WHERE M.group_id = ?
+                ORDER BY M.created_at DESC
+                LIMIT 1`, [group_id], (err, results) => {
+                    if (err) { return reject(err); }
+                    return resolve(results);
+                });
+        });
+
+        return promise;
+    }
+
+    getMembers(group_id) {
+        let promise = new Promise((resolve, reject) => {
+            database.query(
+                `SELECT U.user_id, U.username FROM Groups G
+                JOIN Group_Members GM ON GM.group_id = G.group_id
+                JOIN Users U ON U.user_id = GM.user_id
+                WHERE G.group_id = ?`, [group_id], (err, results) => {
+                    if (err) return reject(err);
+                    return resolve(results);
+                });
+        });
+
+        return promise;
+    }
+
+    deleteMember(group_id, user_id) {
+        let promise = new Promise((resolve, reject) => {
+            database.query(
+                `DELETE FROM Group_Members WHERE user_id = ? AND group_id = ?`,
+            [user_id, group_id], (err, results) => {
+                if (err) return reject(err);
+                return resolve();
+            });
+        });
+
+        return promise;
+    }
 }
 
 module.exports = GroupsService;

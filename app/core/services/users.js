@@ -33,11 +33,26 @@ class UsersService {
         return promise;
     }
 
+    exists(username) {
+        var promise = new Promise((resolve, reject) => {
+            database.query('SELECT * FROM Users WHERE username = ?', [username], (err, user) => {
+                if (err) { return reject(err); }
+                if (user.length > 0) {
+                    return reject(new AppError('User already exists.'));
+                } else {
+                    return resolve(true);
+                }
+            });
+        });
+
+        return promise;
+    }
+
     getByUsername(username) {
         var promise = new Promise((resolve, reject) => {
             database.query('SELECT * FROM Users WHERE username = ?', [username], (err, user) => {
                 if (err) { return reject(err); }
-                if (user) {
+                if (user.length > 0) {
                     return resolve(user[0]);
                 } else {
                     return reject(new AppError('Username does not exist'));
@@ -58,7 +73,7 @@ class UsersService {
                                 if (user) {
                                     return resolve(user[0]);
                                 } else {
-                                    return reject({ error: 'No user with that id.'});
+                                    return reject(new AppError('No user with that id.'));
                                 }
                             });
                         });
@@ -72,7 +87,9 @@ class UsersService {
     getGroupsForUser(user_id) {
         var promise = new Promise ((resolve, reject) => {
             database.query(
-                `SELECT G.group_id, G.name FROM Group_Members GM
+                `SELECT G.group_id, G.name,
+                    (SELECT M.contents FROM Messages M WHERE G.group_id = M.group_id ORDER BY M.created_at DESC LIMIT 1)  AS last_message
+                 FROM Group_Members GM
                  JOIN Groups G ON G.group_id = GM.group_id
                  WHERE user_id = ?`, [user_id], (err, results) => {
                     if (err) { return reject('Failed to find groups for user'); }

@@ -1,4 +1,5 @@
 'use strict';
+let _ = require('lodash');
 let sockets = require('socket.io');
 let events = require('../events.js');
 let redis = require('../redis.js');
@@ -15,17 +16,22 @@ class Dispatcher {
     constructor(http) {
         this.http = http;
         this.io = sockets(http);
+
+        // Keep a dictionary of the sockets associated with each token
+        this.userSockets = {};
+
         this.setupEventHandling();
         this.io.on('connection', this.onConnection);
     }
 
     setupEventHandling() {
         events.on('api:newGroup', this.handleNewGroupCreated);
-        events.on('api:addMember', this.handleGroupAddedMember);
+        events.on('api:addMember', (data) => { this.handleGroupAddedMember.call(this, data); });
         //events.on('api:newGroupMessage', (data) => { this.handleNewGroupMessage.call(this, data); });
     }
 
     onConnection(socket) {
+        let self = this;
         console.log('[DISPATCHER] New socket connection.', socket.id);
 
         socket.on('disconnect', () => {
@@ -37,6 +43,8 @@ class Dispatcher {
         socket.on('setupConnection', (data) => {
             console.log('[DISPATCHER] Received setupConnection');
             auth.getUser(data.token).then((user) => {
+                //socket.set('token', data.token);
+                socket.user_id = user.user_id;
                 return users.getGroupsForUser(user.user_id);
             }).then((groups) => {
                 groups.forEach((group) => {
@@ -50,14 +58,14 @@ class Dispatcher {
         });
 
         socket.on('locationUpdate', (data) => {
-            console.log('[DISPATCHER] Received locationUpdate', data);
+            //console.log('[DISPATCHER] Received locationUpdate', data);
             // data should contain: a valid session token, location coordinates
             // use session token to get user that is sending this update
             // Using User object get ids of all the groups the user is a member of
             // Find the socket io room for each of those rooms and broadcast locationUpdate message
             let scope = {};
             auth.getUser(data.token).then((user) => {
-
+                console.log('\tFrom', user);
                 // Update the user's last position in Redis
                 redis.hmset('user_location:' + user.user_id, [
                     'latitude', data.latitude,
@@ -69,7 +77,7 @@ class Dispatcher {
                 scope.user = user;
                 return users.getGroupsForUser(user.user_id);
             }).then((groups) => {
-                console.log('dispatching location to groups:', groups);
+                //console.log('dispatching location to groups:', groups);
                 groups.forEach((group) => {
                     socket.broadcast.to(group.group_id).emit('locationUpdate', {
                         username: scope.user.username,
@@ -104,7 +112,18 @@ class Dispatcher {
     }
 
     handleGroupAddedMember(data) {
-        console.log('[DISPATCHER] Handling api:addMember', data.group, data.user);
+        console.log('[DISPATCHER] Handling api:addMember', data.group_id, data.user_id);
+        let sockets = _.filter(this.sockets, (socket) => {
+            return socket.user_id === data.user_id;
+        });
+
+        console.log('found sockets');
+        console.log(sockets);
+        _.each(sockets, (socket) => {
+            socket.emit('addedToNewGroup', {
+                group_id: data.group_id
+            });
+        });
     }
 
     handleNewGroupMessage(data) {

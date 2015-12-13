@@ -13,10 +13,12 @@ client.emit('setupConnection', {
     token: token
 });
 
-client.emit('newGroupMessage', {
-    token: token,
-    group_id: 5,
-    message: 'Test message from simulation. ' + shortid.generate()
-}, (data) => {
-    console.log('acknowledged new message', data);
-});
+setInterval(() => {
+    client.emit('newGroupMessage', {
+        token: token,
+        group_id: 5,
+        message: 'Test message from simulation. ' + shortid.generate()
+    }, (data) => {
+        console.log('acknowledged new message', data);
+    });
+}, 10000);

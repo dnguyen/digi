@@ -46,6 +46,21 @@ router.get('/:group_id', (req, res) => {
 });
 
 /**
+ * GET /groups/:group_id/members
+ * Returns all members in a group
+ */
+router.get('/:group_id/members', (req, res) => {
+    let group_id = req.params.group_id;
+    let token = req.body.token;
+    groups.getMembers(group_id).then((members) => {
+        res.send(members);
+    }).catch((err) => {
+        res.status(500).send(err);
+    });
+
+});
+
+/**
  * POST /groups/:group_id/members
  * Add a user to group_id
  */
@@ -75,15 +90,37 @@ router.post('/:group_id/members', (req, res) => {
         if (!isMember) {
             return groups.addMember(scope.group.group_id, scope.userBeingAdded.user_id);
         } else {
-            res.status(403).send('User is already in this group.');
+            res.status(500).send({ message: 'User is already in this group.' });
         }
     }).then((group) => {
+        events.emit('api:addMember', {
+            'group_id': group_id,
+            'user_id': scope.userBeingAdded.user_id
+        });
         res.send(group);
     }).catch((err) => {
         res.status(500).send(err);
     });
 });
 
+/**
+ * DELETE /groups/:group_id/members
+ * Remove a user from a group by token
+ */
+router.delete('/:group_id/members', (req, res) => {
+    let token = req.body.token;
+    let group_id = parseInt(req.params.group_id);
+    console.log('delete request', req.body.token, req.params.group_id);
+    auth.getUser(token).then((user) => {
+        console.log(user);
+        return groups.deleteMember(group_id, user.user_id);
+    }).then((result) => {
+        res.send();
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send({ message: 'Error with deleting member.' });
+    });
+});
 
 /**
  * POST /groups/:group_id/messages
@@ -103,5 +140,6 @@ router.post('/:group_id/messages', (req, res) => {
         res.status(500).send(err);
     });
 });
+
 
 module.exports = router;

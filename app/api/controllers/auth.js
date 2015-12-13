@@ -11,7 +11,7 @@ router.post('/', (req, res) => {
     .then((token) => {
         res.send(token);
     }).catch((error) => {
-        res.status(500).send(error.message);
+        res.status(500).send(error);
     });
 });
 
