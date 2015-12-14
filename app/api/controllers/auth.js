@@ -15,4 +15,13 @@ router.post('/', (req, res) => {
     });
 });
 
+router.delete('/', (req, res) => {
+    let token = req.body.token;
+    auth.deleteToken(token).then(() => {
+        res.send();
+    }).catch((err) => {
+        res.status(500).send(err);
+    });
+});
+
 module.exports = router;

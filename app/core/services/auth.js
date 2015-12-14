@@ -85,6 +85,17 @@ class AuthService {
 
         return promise;
     }
+
+    deleteToken(token) {
+        let promise = new Promise((resolve, reject) => {
+            database.query('DELETE FROM Tokens WHERE token = ?', [token], (err, result) => {
+                if (err) return reject(err);
+                return resolve();
+            });
+        });
+
+        return promise;
+    }
 }
 
 module.exports = AuthService;

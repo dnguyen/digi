@@ -27,6 +27,7 @@ class Dispatcher {
     setupEventHandling() {
         events.on('api:newGroup', this.handleNewGroupCreated);
         events.on('api:addMember', (data) => { this.handleGroupAddedMember.call(this, data); });
+        events.on('api:removeMember', (data) => { this.handleRemovedMember.call(this, data); });
         //events.on('api:newGroupMessage', (data) => { this.handleNewGroupMessage.call(this, data); });
     }
 
@@ -65,7 +66,7 @@ class Dispatcher {
             // Find the socket io room for each of those rooms and broadcast locationUpdate message
             let scope = {};
             auth.getUser(data.token).then((user) => {
-                console.log('\tFrom', user);
+                //console.log('\tFrom', user);
                 // Update the user's last position in Redis
                 redis.hmset('user_location:' + user.user_id, [
                     'latitude', data.latitude,
@@ -113,17 +114,36 @@ class Dispatcher {
 
     handleGroupAddedMember(data) {
         console.log('[DISPATCHER] Handling api:addMember', data.group_id, data.user_id);
-        let sockets = _.filter(this.sockets, (socket) => {
+        let sockets = _.filter(this.io.nsps['/'].connected, (socket) => {
             return socket.user_id === data.user_id;
         });
 
-        console.log('found sockets');
-        console.log(sockets);
         _.each(sockets, (socket) => {
+            socket.join(data.group_id);
             socket.emit('addedToNewGroup', {
                 group_id: data.group_id
             });
         });
+    }
+
+    handleRemovedMember(data) {
+        console.log('[DISPATCHER] Handling api:removeMember', data);
+
+        this.io.to(data.group_id).emit('removedFromGroup', {
+            group_id: data.group_id,
+            user: data.user
+        });
+        // let sockets = _.filter(this.io.nsps['/'].connected, (socket) => {
+        //     return socket.user_id === data.user.user_id;
+        // });
+        // console.log(sockets);
+        // _.each(sockets, (socket) => {
+        //     socket.leave(data.group_id);
+        //     this.io.broadcast.to(data.group_id).emit('removedFromGroup', {
+        //         group_id: data.group_id,
+        //         user: data.user
+        //     });
+        // });
     }
 
     handleNewGroupMessage(data) {

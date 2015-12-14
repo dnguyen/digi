@@ -110,11 +110,16 @@ router.post('/:group_id/members', (req, res) => {
 router.delete('/:group_id/members', (req, res) => {
     let token = req.body.token;
     let group_id = parseInt(req.params.group_id);
-    console.log('delete request', req.body.token, req.params.group_id);
+    let scope = {};
+
     auth.getUser(token).then((user) => {
-        console.log(user);
+        scope.user = user;
         return groups.deleteMember(group_id, user.user_id);
     }).then((result) => {
+        events.emit('api:removeMember', {
+            group_id: group_id,
+            user: scope.user
+        });
         res.send();
     }).catch((err) => {
         console.log(err);
