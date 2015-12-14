@@ -133,17 +133,17 @@ class Dispatcher {
             group_id: data.group_id,
             user: data.user
         });
-        // let sockets = _.filter(this.io.nsps['/'].connected, (socket) => {
-        //     return socket.user_id === data.user.user_id;
-        // });
+        let sockets = _.filter(this.io.nsps['/'].connected, (socket) => {
+            return socket.user_id === data.user.user_id;
+        });
         // console.log(sockets);
-        // _.each(sockets, (socket) => {
-        //     socket.leave(data.group_id);
+        _.each(sockets, (socket) => {
+             socket.leave(data.group_id);
         //     this.io.broadcast.to(data.group_id).emit('removedFromGroup', {
         //         group_id: data.group_id,
         //         user: data.user
         //     });
-        // });
+        });
     }
 
     handleNewGroupMessage(data) {
